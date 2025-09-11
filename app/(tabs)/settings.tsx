@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Keyboard, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import WaterBackground from '../../components/WaterBackground';
 import { requestNotificationPermissions, scheduleWaterReminders } from '../../utils/notifications';
-import { getGoal, setGoal } from '../../utils/storage';
+import { getGoal, getTodayIntake, setGoal } from '../../utils/storage';
 
 const SettingsScreen: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [goal, setGoalState] = useState(8);
+  const [todayIntake, setTodayIntake] = useState(0);
   const [goalInput, setGoalInput] = useState('8');
 
   useEffect(() => {
@@ -13,6 +15,7 @@ const SettingsScreen: React.FC = () => {
       const storedGoal = await getGoal();
       setGoalState(storedGoal);
       setGoalInput(storedGoal.toString());
+      setTodayIntake(await getTodayIntake());
     };
     fetchGoal();
   }, []);
@@ -46,8 +49,9 @@ const SettingsScreen: React.FC = () => {
     }
   };
 
+  const percent = goal > 0 ? Math.min(todayIntake / goal, 1) : 0;
   return (
-    <View style={styles.container}>
+    <WaterBackground percent={percent}>
       <Text style={styles.header}>Settings</Text>
       <View style={styles.row}>
         <Text style={styles.label}>Water Reminders</Text>
@@ -76,19 +80,13 @@ const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </WaterBackground>
   );
 };
 
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#eaf6fb',
-    paddingHorizontal: 24,
-  },
+  // container removed, now handled by WaterBackground
   header: {
     fontSize: 24,
     fontWeight: 'bold',

@@ -1,30 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
-import { getIntakeHistory } from '../../utils/storage';
+import WaterBackground from '../../components/WaterBackground';
+import { getGoal, getIntakeHistory, getTodayIntake } from '../../utils/storage';
 
 const HistoryScreen: React.FC = () => {
   const [history, setHistory] = useState<{ date: string; intake: number }[]>([]);
+  const [todayIntake, setTodayIntake] = useState(0);
+  const [goal, setGoal] = useState(8);
 
   useEffect(() => {
-    const fetchHistory = async () => {
-      const data = await getIntakeHistory();
-      // Get today's date in YYYY-MM-DD format
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      const todayStr = `${yyyy}-${mm}-${dd}`;
-      // Remove current day from history
-      const filtered = data.filter(d => d.date !== todayStr);
-      // Sort by date descending (most recent first)
-      const sorted = [...filtered].sort((a, b) => (a.date < b.date ? 1 : -1));
-      setHistory(sorted);
+    const fetchData = async () => {
+      setHistory(await getIntakeHistory());
+      setTodayIntake(await getTodayIntake());
+      setGoal(await getGoal());
     };
-    fetchHistory();
+    fetchData();
   }, []);
 
+  const percent = goal > 0 ? Math.min(todayIntake / goal, 1) : 0;
   return (
-    <View style={styles.container}>
+    <WaterBackground percent={percent}>
       <Text style={styles.header}>History</Text>
       <FlatList
         data={history}
@@ -37,19 +32,12 @@ const HistoryScreen: React.FC = () => {
         )}
         ListEmptyComponent={<Text style={styles.empty}>No history yet.</Text>}
       />
-    </View>
+    </WaterBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    backgroundColor: '#eaf6fb',
-    paddingHorizontal: 24,
-    paddingTop: 32,
-  },
+  // container removed, now handled by WaterBackground
   header: {
     fontSize: 24,
     fontWeight: 'bold',
