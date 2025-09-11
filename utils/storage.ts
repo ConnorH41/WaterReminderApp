@@ -3,6 +3,27 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const TODAY_KEY = `water-intake-${new Date().toISOString().slice(0, 10)}`;
 const GOAL_KEY = 'water-goal';
 
+// Helper to get date string for N days ago
+const getDateKey = (daysAgo: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  return `water-intake-${date.toISOString().slice(0, 10)}`;
+};
+
+// Get last 7 days intake as array of { date, intake }
+export const getIntakeHistory = async (): Promise<{ date: string; intake: number }[]> => {
+  const history: { date: string; intake: number }[] = [];
+  for (let i = 0; i < 7; i++) {
+    const key = getDateKey(i);
+    const value = await AsyncStorage.getItem(key);
+    history.push({
+      date: key.replace('water-intake-', ''),
+      intake: value ? parseInt(value, 10) : 0,
+    });
+  }
+  return history.reverse(); // most recent last
+};
+
 export const getTodayIntake = async (): Promise<number> => {
   const value = await AsyncStorage.getItem(TODAY_KEY);
   return value ? parseInt(value, 10) : 0;
