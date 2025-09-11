@@ -29,10 +29,15 @@ export const getTodayIntake = async (): Promise<number> => {
   return value ? parseInt(value, 10) : 0;
 };
 
+
 export const addCup = async (amount: number = 8): Promise<void> => {
   const current = await getTodayIntake();
   await AsyncStorage.setItem(TODAY_KEY, (current + amount).toString());
 };
+
+export const setTodayIntake = async (amount: number): Promise<void> => {
+  await AsyncStorage.setItem(TODAY_KEY, amount.toString());
+}
 
 export const resetIntake = async (): Promise<void> => {
   await AsyncStorage.setItem(TODAY_KEY, '0');

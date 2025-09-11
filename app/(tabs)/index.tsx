@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Dimensions, PanResponder, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import WaterButton from '../../components/WaterButton';
-import { addCup, getGoal, getTodayIntake, resetIntake } from '../../utils/storage';
+import { addCup, getGoal, getTodayIntake, resetIntake, setTodayIntake } from '../../utils/storage';
 
 const HomeScreen: React.FC = () => {
   const [intake, setIntake] = useState(0);
@@ -40,14 +40,8 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleConfirm = async () => {
-    const diff = tempIntake - intake;
-    if (diff > 0) {
-      await addCup(diff);
-      setIntake(await getTodayIntake());
-    } else if (diff < 0) {
-      // Optionally allow reducing intake, or just set to intake
-      setIntake(tempIntake);
-    }
+    await setTodayIntake(tempIntake);
+    setIntake(await getTodayIntake());
     setInteractive(false);
   };
 
