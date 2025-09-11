@@ -1,10 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-const HomeScreen: React.FC = () => (
+const HistoryScreen: React.FC = () => (
   <View style={styles.container}>
-    <Text style={styles.header}>💧 Water Reminder</Text>
-    {/* Progress and buttons will go here */}
+    <Text style={styles.header}>History</Text>
+    {/* History UI will go here */}
   </View>
 );
 
@@ -16,10 +16,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5fafd',
   },
   header: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 24,
+    marginBottom: 16,
   },
 });
 
-export default HomeScreen;
+export default HistoryScreen;
