@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { getIntakeHistory } from '../../utils/storage';
 
 const HistoryScreen: React.FC = () => {
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: '#f5fafd',
+    backgroundColor: '#eaf6fb',
     paddingHorizontal: 24,
     paddingTop: 32,
   },
@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 24,
+    color: '#2196f3',
   },
   item: {
     flexDirection: 'row',
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#b2ebf2',
   },
   date: {
     fontSize: 16,
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
   intake: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#00bfff',
+    color: '#00bfae',
   },
   empty: {
     fontSize: 16,

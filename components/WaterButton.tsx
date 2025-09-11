@@ -13,11 +13,15 @@ const WaterButton: React.FC<WaterButtonProps> = ({ onPress }) => (
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#00bfff',
+    backgroundColor: '#1de9b6',
     padding: 24,
     borderRadius: 50,
     alignItems: 'center',
     marginVertical: 16,
+    shadowColor: '#2196f3',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   text: {
     color: '#fff',

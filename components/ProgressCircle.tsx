@@ -20,7 +20,7 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({ progress, goal, unit = 
     <View style={styles.container}>
       <Svg width={size} height={size}>
         <Circle
-          stroke="#e0e0e0"
+          stroke="#b2ebf2"
           fill="none"
           cx={size / 2}
           cy={size / 2}
@@ -28,7 +28,7 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({ progress, goal, unit = 
           strokeWidth={strokeWidth}
         />
         <Circle
-          stroke="#00bfff"
+          stroke="#26c6da"
           fill="none"
           cx={size / 2}
           cy={size / 2}
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#2196f3',
   },
 });
 

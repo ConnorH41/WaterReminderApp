@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet, Switch, Text, TextInput, View, TouchableOpacity, Keyboard } from 'react-native';
+import { Alert, Keyboard, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { requestNotificationPermissions, scheduleWaterReminders } from '../../utils/notifications';
 import { getGoal, setGoal } from '../../utils/storage';
 
@@ -86,13 +86,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f5fafd',
+    backgroundColor: '#eaf6fb',
     paddingHorizontal: 24,
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 32,
+    color: '#2196f3',
   },
   row: {
     flexDirection: 'row',
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#b2ebf2',
   },
   label: {
     fontSize: 18,
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#b2ebf2',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -121,10 +122,14 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   doneButton: {
-    backgroundColor: '#00bfff',
+    backgroundColor: '#1de9b6',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
+    shadowColor: '#2196f3',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   doneText: {
     color: '#fff',

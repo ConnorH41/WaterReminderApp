@@ -44,7 +44,7 @@ const HomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>💧 Water Reminder</Text>
+  <Text style={styles.header}>Water Reminder</Text>
       <Text style={styles.subtitle}>Stay hydrated!</Text>
       <View style={styles.progressWrapper}>
     <ProgressCircle progress={intake} goal={goal} unit="oz" />
@@ -62,14 +62,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f5fafd',
+    backgroundColor: '#eaf6fb',
     paddingHorizontal: 24,
   },
   header: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: '#00bfff',
+    color: '#2196f3',
   },
   subtitle: {
     fontSize: 16,
@@ -80,15 +80,19 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   resetButton: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#ffa726',
     paddingVertical: 8,
     paddingHorizontal: 24,
     borderRadius: 20,
     marginTop: 8,
     alignSelf: 'center',
+    shadowColor: '#2196f3',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   resetText: {
-    color: '#333',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
