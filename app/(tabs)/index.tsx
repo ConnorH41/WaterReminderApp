@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Dimensions, PanResponder, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import WaterButton from '../../components/WaterButton';
+import WaterBackground from '../../components/WaterBackground';
 import { addCup, getGoal, getTodayIntake, resetIntake, setTodayIntake } from '../../utils/storage';
 
 const HomeScreen: React.FC = () => {
@@ -51,11 +52,9 @@ const HomeScreen: React.FC = () => {
     setLastCheckedDate(new Date().toISOString().slice(0, 10));
   };
 
-  const windowHeight = Dimensions.get('window').height;
   const waterLevelPercent = interactive
     ? Math.min(tempIntake / goal, 1)
     : Math.min(intake / goal, 1);
-  const waterHeight = Math.round(windowHeight * waterLevelPercent);
 
   // PanResponder for interactive water level
   const panResponder = PanResponder.create({
@@ -63,11 +62,12 @@ const HomeScreen: React.FC = () => {
     onMoveShouldSetPanResponder: () => interactive,
     onPanResponderMove: (evt, gestureState) => {
       if (!interactive) return;
-      const y = gestureState.moveY - 80; // offset for header
-      const boundedY = Math.max(0, Math.min(windowHeight, y));
-      const percent = 1 - boundedY / windowHeight;
-      const newIntake = Math.round(percent * goal);
-      setTempIntake(Math.max(0, Math.min(goal, newIntake)));
+  const y = gestureState.moveY - 80; // offset for header
+  const winHeight = Dimensions.get('window').height;
+  const boundedY = Math.max(0, Math.min(winHeight, y));
+  const percent = 1 - boundedY / winHeight;
+  const newIntake = Math.round(percent * goal);
+  setTempIntake(Math.max(0, Math.min(goal, newIntake)));
     },
   });
 
@@ -89,61 +89,38 @@ const HomeScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <WaterBackground percent={waterLevelPercent}>
       <View
-        style={styles.waterBackground}
+        style={styles.overlayContent}
         {...(interactive ? panResponder.panHandlers : {})}
       >
-        <View style={[styles.waterLevel, { height: waterHeight }]} />
-        <View style={styles.overlayContent}>
-          <Text style={styles.header}>Water Reminder</Text>
-          <Text style={styles.subtitle}>Stay hydrated!</Text>
-          <Text style={styles.levelText}>
-            {interactive
-              ? `${tempIntake} / ${goal} oz`
-              : `${intake} / ${goal} oz`}
-          </Text>
-          {!interactive ? (
-            <View style={styles.bottomButtons}>
-              <WaterButton onPress={handleAddButton} amount={'Edit Water Intake'} />
-              <TouchableOpacity style={styles.addButton} onPress={handleQuickAdd}>
-                <Text style={styles.addText}>Quick Add</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-              <Text style={styles.confirmText}>Confirm</Text>
+        <Text style={styles.header}>Water Reminder</Text>
+        <Text style={styles.subtitle}>Stay hydrated!</Text>
+        <Text style={styles.levelText}>
+          {interactive
+            ? `${tempIntake} / ${goal} oz`
+            : `${intake} / ${goal} oz`}
+        </Text>
+        {!interactive ? (
+          <View style={styles.bottomButtons}>
+            <WaterButton onPress={handleAddButton} amount={'Edit Water Intake'} />
+            <TouchableOpacity style={styles.addButton} onPress={handleQuickAdd}>
+              <Text style={styles.addText}>Quick Add</Text>
             </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+            <Text style={styles.confirmText}>Confirm</Text>
+          </TouchableOpacity>
+        )}
       </View>
-    </View>
+    </WaterBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#eaf6fb',
-    padding: 0,
-  },
-  waterBackground: {
-    flex: 1,
-    width: '100%',
-    position: 'relative',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    backgroundColor: '#eaf6fb',
-    overflow: 'hidden',
-  },
-  waterLevel: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#26c6da',
-    zIndex: 1,
-  },
+  // container and waterBackground removed, now handled by WaterBackground
+  // waterLevel removed, now handled by WaterBackground
   overlayContent: {
     position: 'absolute',
     top: 0,
