@@ -6,7 +6,7 @@ import { addCup, getGoal, getTodayIntake, resetIntake } from '../../utils/storag
 
 const HomeScreen: React.FC = () => {
   const [intake, setIntake] = useState(0);
-  const [goal, setGoal] = useState(8);
+  const [goal, setGoal] = useState(64); // default 64oz
   const [lastCheckedDate, setLastCheckedDate] = useState(new Date().toISOString().slice(0, 10));
 
   // Fetch intake and goal on mount
@@ -32,7 +32,7 @@ const HomeScreen: React.FC = () => {
   }, [lastCheckedDate]);
 
   const handleAddCup = async () => {
-    await addCup();
+    await addCup(8); // add 8oz per press
     setIntake(await getTodayIntake());
   };
 
@@ -47,7 +47,7 @@ const HomeScreen: React.FC = () => {
       <Text style={styles.header}>💧 Water Reminder</Text>
       <Text style={styles.subtitle}>Stay hydrated!</Text>
       <View style={styles.progressWrapper}>
-        <ProgressCircle progress={intake} goal={goal} />
+    <ProgressCircle progress={intake} goal={goal} unit="oz" />
       </View>
       <WaterButton onPress={handleAddCup} />
       <TouchableOpacity style={styles.resetButton} onPress={handleReset}>

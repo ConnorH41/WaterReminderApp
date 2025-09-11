@@ -7,7 +7,7 @@ interface WaterButtonProps {
 
 const WaterButton: React.FC<WaterButtonProps> = ({ onPress }) => (
   <TouchableOpacity style={styles.button} onPress={onPress}>
-    <Text style={styles.text}>+ Add Cup</Text>
+  <Text style={styles.text}>+ Add 8oz</Text>
   </TouchableOpacity>
 );
 

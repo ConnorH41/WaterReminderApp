@@ -5,9 +5,10 @@ import Svg, { Circle } from 'react-native-svg';
 interface ProgressCircleProps {
   progress: number;
   goal: number;
+  unit?: string;
 }
 
-const ProgressCircle: React.FC<ProgressCircleProps> = ({ progress, goal }) => {
+const ProgressCircle: React.FC<ProgressCircleProps> = ({ progress, goal, unit = 'oz' }) => {
   const size = 120;
   const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
@@ -37,7 +38,7 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({ progress, goal }) => {
           strokeDashoffset={strokeDashoffset}
         />
       </Svg>
-      <Text style={styles.text}>{`${progress} / ${goal} cups`}</Text>
+  <Text style={styles.text}>{`${progress} / ${goal} ${unit}`}</Text>
     </View>
   );
 };
