@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ProgressCircle from '../../components/ProgressCircle';
 import WaterButton from '../../components/WaterButton';
-import { getTodayIntake, addCup, resetIntake, getGoal } from '../../utils/storage';
+import { addCup, getGoal, getTodayIntake, resetIntake } from '../../utils/storage';
 
 const HomeScreen: React.FC = () => {
   const [intake, setIntake] = useState(0);
   const [goal, setGoal] = useState(8);
+  const [lastCheckedDate, setLastCheckedDate] = useState(new Date().toISOString().slice(0, 10));
 
+  // Fetch intake and goal on mount
   useEffect(() => {
     const fetchData = async () => {
       setIntake(await getTodayIntake());
@@ -15,6 +17,19 @@ const HomeScreen: React.FC = () => {
     };
     fetchData();
   }, []);
+
+  // Daily reset logic: check for date change every minute
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      if (today !== lastCheckedDate) {
+        await resetIntake();
+        setIntake(0);
+        setLastCheckedDate(today);
+      }
+    }, 60000); // check every minute
+    return () => clearInterval(interval);
+  }, [lastCheckedDate]);
 
   const handleAddCup = async () => {
     await addCup();
@@ -24,6 +39,7 @@ const HomeScreen: React.FC = () => {
   const handleReset = async () => {
     await resetIntake();
     setIntake(0);
+    setLastCheckedDate(new Date().toISOString().slice(0, 10));
   };
 
   return (
