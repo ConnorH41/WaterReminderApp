@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Dimensions, PanResponder, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import WaterButton from '../../components/WaterButton';
 import WaterBackground from '../../components/WaterBackground';
-import { addCup, getGoal, getTodayIntake, resetIntake, setTodayIntake } from '../../utils/storage';
+import WaterButton from '../../components/WaterButton';
+import { subscribe, subscribe as subscribeEvent } from '../../utils/eventBus';
+import { addCup, getEmoji, getGoal, getTodayIntake, resetIntake, setTodayIntake } from '../../utils/storage';
 
 const HomeScreen: React.FC = () => {
   const [intake, setIntake] = useState(0);
@@ -14,8 +15,13 @@ const HomeScreen: React.FC = () => {
     const fetchData = async () => {
       setIntake(await getTodayIntake());
       setGoal(await getGoal());
+      setEmoji(await getEmoji());
     };
     fetchData();
+    const unsubGoal = subscribeEvent('goalChanged', (p: any) => {
+      if (p && p.goal) setGoal(p.goal);
+    });
+    return () => { unsubGoal && unsubGoal(); };
   }, []);
 
   // Daily reset logic: check for date change every minute
@@ -34,6 +40,15 @@ const HomeScreen: React.FC = () => {
   const [interactive, setInteractive] = useState(false);
   const [tempIntake, setTempIntake] = useState(intake);
   // Remove addAmount state
+  const [emoji] = useState('💧');
+  const [emojiState, setEmoji] = useState('💧');
+
+  useEffect(() => {
+    const unsub = subscribe('emojiChanged', (e) => {
+      if (e) setEmoji(e);
+    });
+    return unsub;
+  }, []);
 
   const handleAddButton = () => {
     setInteractive(true);
@@ -89,7 +104,7 @@ const HomeScreen: React.FC = () => {
   };
 
   return (
-    <WaterBackground percent={waterLevelPercent}>
+  <WaterBackground percent={waterLevelPercent} emoji={emojiState}>
       <View
         style={styles.overlayContent}
         {...(interactive ? panResponder.panHandlers : {})}
@@ -104,8 +119,8 @@ const HomeScreen: React.FC = () => {
               : '0%'}
           </Text>
         </View>
-
-  {/* header and subtitle removed per user request */}
+        {/* header and subtitle removed per user request */}
+        {/* emoji picker moved to Settings */}
         {!interactive ? (
           <View style={styles.bottomButtons}>
             <WaterButton onPress={handleAddButton} amount={'Edit Water Intake'} />
@@ -172,6 +187,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#00796b',
     fontWeight: '600',
+  },
+  emojiPicker: {
+    position: 'absolute',
+    top: 180,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+    zIndex: 3,
+  },
+  emojiOption: {
+    padding: 6,
+    borderRadius: 8,
+  },
+  emojiOptionText: {
+    fontSize: 22,
+  },
+  emojiSelected: {
+    transform: [{ scale: 1.2 }],
   },
   bottomButtons: {
     position: 'absolute',

@@ -1,20 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Keyboard, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { emit } from '../../utils/eventBus';
 import { requestNotificationPermissions, scheduleWaterReminders } from '../../utils/notifications';
-import { getGoal, getTodayIntake, setGoal } from '../../utils/storage';
+import { getEmoji, getGoal, getMetric, getTodayIntake, setEmoji, setGoal, setMetric } from '../../utils/storage';
 
 const SettingsScreen: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [goal, setGoalState] = useState(8);
   const [todayIntake, setTodayIntake] = useState(0);
-  const [goalInput, setGoalInput] = useState('8');
+    const [emojiLocal, setEmojiLocal] = useState('💧');
+    const [pickerVisible, setPickerVisible] = useState(false);
+    const [pendingEmoji, setPendingEmoji] = useState(emojiLocal);
+    const [goalPickerVisible, setGoalPickerVisible] = useState(false);
+    const [metric, setMetricLocal] = useState<'imperial'|'metric'>('imperial');
+    const [pendingMetric, setPendingMetric] = useState<'imperial'|'metric'>(metric);
+    const [pendingGoalValue, setPendingGoalValue] = useState(goal.toString());
 
   useEffect(() => {
     const fetchGoal = async () => {
-      const storedGoal = await getGoal();
-      setGoalState(storedGoal);
-      setGoalInput(storedGoal.toString());
+  const storedGoal = await getGoal();
+  setGoalState(storedGoal);
       setTodayIntake(await getTodayIntake());
+      setEmojiLocal(await getEmoji());
+      setMetricLocal(await getMetric());
     };
     fetchGoal();
   }, []);
@@ -32,21 +40,6 @@ const SettingsScreen: React.FC = () => {
     }
   };
 
-  const handleGoalChange = async (text: string) => {
-    setGoalInput(text.replace(/[^0-9]/g, ''));
-  };
-
-  const handleGoalSubmit = async () => {
-    const newGoal = parseInt(goalInput, 10);
-    if (!isNaN(newGoal) && newGoal > 0) {
-      await setGoal(newGoal);
-      setGoalState(newGoal);
-      Alert.alert('Goal updated', `Your daily goal is now ${newGoal} cups.`);
-    } else {
-      Alert.alert('Invalid goal', 'Please enter a valid number greater than 0.');
-      setGoalInput(goal.toString());
-    }
-  };
 
   const percent = goal > 0 ? Math.min(todayIntake / goal, 1) : 0;
   return (
@@ -60,26 +53,93 @@ const SettingsScreen: React.FC = () => {
           onValueChange={handleToggleNotifications}
         />
       </View>
+      {/* Daily Goal now changed via the modal below */}
       <View style={styles.row}>
-        <Text style={styles.label}>Daily Goal (oz)</Text>
+        <Text style={styles.label}>Daily Goal</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TextInput
-            style={styles.input}
-            value={goalInput}
-            keyboardType="number-pad"
-            onChangeText={handleGoalChange}
-            onBlur={handleGoalSubmit}
-            onSubmitEditing={handleGoalSubmit}
-            returnKeyType="done"
-          />
-          <TouchableOpacity
-            style={styles.doneButton}
-            onPress={() => { handleGoalSubmit(); Keyboard.dismiss(); }}
-          >
-            <Text style={styles.doneText}>Done</Text>
+          <Text style={styles.goalPreview}>{goal} oz</Text>
+          <TouchableOpacity style={styles.changeButton} onPress={() => { setPendingMetric(metric); setPendingGoalValue(goal.toString()); setGoalPickerVisible(true); }}>
+            <Text style={styles.changeButtonText}>Change</Text>
           </TouchableOpacity>
         </View>
       </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>Emoji</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={styles.emojiPreview}>{emojiLocal}</Text>
+          <TouchableOpacity style={styles.changeButton} onPress={() => { setPendingEmoji(emojiLocal); setPickerVisible(true); }}>
+            <Text style={styles.changeButtonText}>Change</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <Modal visible={pickerVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Choose Emoji</Text>
+            <View style={styles.modalGrid}>
+              {['💧','🐙','🐢','🦕','🍉','🥤'].map(e => (
+                <TouchableOpacity key={e} onPress={() => setPendingEmoji(e)} style={[styles.modalEmojiOption, pendingEmoji === e ? styles.modalEmojiSelected : undefined]}>
+                  <Text style={styles.modalEmojiText}>{e}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setPickerVisible(false)}>
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalSave} onPress={async () => { await setEmoji(pendingEmoji); setEmojiLocal(pendingEmoji); setPickerVisible(false); emit('emojiChanged', pendingEmoji); Alert.alert('Saved', 'Emoji updated'); }}>
+                <Text style={styles.modalSaveText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={goalPickerVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Set Daily Goal</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
+              <TouchableOpacity onPress={() => setPendingMetric('imperial')} style={[styles.metricOption, pendingMetric === 'imperial' ? styles.metricSelected : undefined]}>
+                <Text>oz</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setPendingMetric('metric')} style={[styles.metricOption, pendingMetric === 'metric' ? styles.metricSelected : undefined]}>
+                <Text>ml</Text>
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.input}
+              value={pendingGoalValue}
+              keyboardType="number-pad"
+              onChangeText={(t) => setPendingGoalValue(t.replace(/[^0-9]/g, ''))}
+            />
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setGoalPickerVisible(false)}>
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalSave} onPress={async () => {
+                const val = parseInt(pendingGoalValue, 10);
+                if (isNaN(val) || val <= 0) { Alert.alert('Invalid', 'Please enter a valid number'); return; }
+                // convert metric ml to oz if needed
+                let storedOunces = val;
+                if (pendingMetric === 'metric') {
+                  storedOunces = Math.round(val / 29.5735);
+                }
+                await setGoal(storedOunces);
+                await setMetric(pendingMetric);
+                setGoalState(storedOunces);
+                setMetricLocal(pendingMetric);
+                setGoalPickerVisible(false);
+                emit('goalChanged', { goal: storedOunces, metric: pendingMetric });
+                Alert.alert('Saved', 'Daily goal updated');
+              }}>
+                <Text style={styles.modalSaveText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       </View>
     </View>
   );
@@ -147,6 +207,98 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  emojiOption: {
+    padding: 6,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  emojiOptionText: {
+    fontSize: 22,
+  },
+  emojiSelected: {
+    transform: [{ scale: 1.2 }],
+  },
+  emojiPreview: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  changeButton: {
+    backgroundColor: '#1e88e5',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  changeButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+  },
+  modalEmojiOption: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  modalEmojiSelected: {
+    backgroundColor: '#e0f7fa',
+  },
+  modalEmojiText: {
+    fontSize: 32,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalCancel: {
+    padding: 12,
+  },
+  modalCancelText: {
+    color: '#666',
+  },
+  modalSave: {
+    backgroundColor: '#1de9b6',
+    padding: 12,
+    borderRadius: 8,
+  },
+  modalSaveText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  goalPreview: {
+    fontSize: 18,
+    marginRight: 12,
+  },
+  metricOption: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  metricSelected: {
+    backgroundColor: '#e0f7fa',
+    borderColor: '#1de9b6',
   },
 });
 

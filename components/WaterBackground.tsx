@@ -1,17 +1,18 @@
 
 import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import Animated, { useSharedValue, useAnimatedProps, withTiming } from 'react-native-reanimated';
-import Svg, { Rect, Defs, ClipPath, G } from 'react-native-svg';
+import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
+import Svg, { ClipPath, Defs, Rect, Text as SvgText } from 'react-native-svg';
 
 interface WaterBackgroundProps {
   percent: number; // 0 to 1
   children?: React.ReactNode;
+  emoji?: string;
 }
 
 // No animated Path needed after removing wave
 
-const WaterBackground: React.FC<WaterBackgroundProps> = ({ percent, children }) => {
+const WaterBackground: React.FC<WaterBackgroundProps> = ({ percent, children, emoji }) => {
   const screenWidth = Dimensions.get('window').width;
   const glassWidth = Math.min(320, screenWidth - 48);
   const glassHeight = 420;
@@ -35,6 +36,18 @@ const WaterBackground: React.FC<WaterBackgroundProps> = ({ percent, children }) 
   });
   const ARect: any = AnimatedRect;
 
+  // animated props for an overlay rect that covers the unfilled top area
+  const animatedOverlayProps = useAnimatedProps(() => {
+    const p = fillProgress.value;
+    const h = glassHeight * p;
+    const overlayHeight = glassHeight - h;
+    return {
+      y: 0,
+      height: overlayHeight,
+    } as any;
+  });
+  const AOverlayRect: any = AnimatedRect;
+
   // (removed animated wave) keep only animated rect for clean fill
 
   return (
@@ -48,12 +61,49 @@ const WaterBackground: React.FC<WaterBackgroundProps> = ({ percent, children }) 
           </Defs>
 
           {/* glass background */}
-          <Rect x={0} y={0} width={glassWidth} height={glassHeight} rx={24} fill="#ffffff" opacity={0.6} />
+          <Rect x={0} y={0} width={glassWidth} height={glassHeight} rx={24} fill="#ffffff" opacity={0.8} />
 
-          {/* water group clipped to glass */}
-          <G clipPath="url(#glassClip)">
-            <ARect animatedProps={animatedRectProps as any} x={0} width={glassWidth} rx={0} fill="#26c6da" />
-          </G>
+          {/* grey (empty) emoji - slightly transparent so blue fill shows through */}
+          <SvgText
+            x={glassWidth / 2}
+            y={glassHeight / 2 + 10}
+            fontSize={Math.floor(glassWidth * 0.7)}
+            fill="#bdbdbd"
+            opacity={0.32}
+            textAnchor="middle"
+            alignmentBaseline="middle"
+          >
+            {emoji ?? '💧'}
+          </SvgText>
+
+          {/* colored emoji (full). We'll cover the top unfilled area with an animated overlay rect so the blue only shows at the bottom */}
+          <SvgText
+            x={glassWidth / 2}
+            y={glassHeight / 2 + 10}
+            fontSize={Math.floor(glassWidth * 0.7)}
+            fill="#26c6da"
+            textAnchor="middle"
+            alignmentBaseline="middle"
+          >
+            {emoji ?? '💧'}
+          </SvgText>
+
+          {/* animated overlay covering the top (unfilled) portion so blue shows only at the bottom */}
+          <AOverlayRect animatedProps={animatedOverlayProps as any} x={0} width={glassWidth} rx={0} fill="#ffffff" opacity={0.8} />
+
+          {/* subtle outline on top so the emoji maintains a visible edge over the fill */}
+          <SvgText
+            x={glassWidth / 2}
+            y={glassHeight / 2 + 10}
+            fontSize={Math.floor(glassWidth * 0.7)}
+            fill="none"
+            stroke="#8c8c8c"
+            strokeWidth={Math.max(1, Math.floor(glassWidth * 0.01))}
+            textAnchor="middle"
+            alignmentBaseline="middle"
+          >
+            {emoji ?? '💧'}
+          </SvgText>
 
           {/* glass border */}
           <Rect x={2} y={2} width={glassWidth - 4} height={glassHeight - 4} rx={22} stroke="#bfeff6" strokeWidth={2} fill="none" />
@@ -88,6 +138,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 180,
   },
+  // emoji is rendered as SVG text inside the glass now
   overlayContent: {
     position: 'absolute',
     top: 0,
