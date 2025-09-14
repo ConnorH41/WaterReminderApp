@@ -23,6 +23,7 @@ const HistoryScreen: React.FC = () => {
       <FlatList
         data={history}
         keyExtractor={item => item.date}
+        contentContainerStyle={{ paddingTop: 180 }}
         renderItem={({ item }) => (
           <View style={styles.item}>
             <Text style={styles.date}>{item.date}</Text>
@@ -43,10 +44,16 @@ const styles = StyleSheet.create({
   },
   // container removed, now handled by WaterBackground
   header: {
+    position: 'absolute',
+    top: 120,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 24,
     color: '#2196f3',
+    zIndex: 3,
   },
   item: {
     flexDirection: 'row',
