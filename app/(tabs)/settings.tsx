@@ -52,6 +52,7 @@ const SettingsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Settings</Text>
+      <View style={styles.content}>
       <View style={styles.row}>
         <Text style={styles.label}>Water Reminders</Text>
         <Switch
@@ -79,6 +80,7 @@ const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
+      </View>
     </View>
   );
 };
@@ -91,10 +93,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7feff',
   },
   header: {
+    position: 'absolute',
+    top: 120,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 32,
     color: '#2196f3',
+    zIndex: 3,
+  },
+  content: {
+    paddingTop: 180,
   },
   row: {
     flexDirection: 'row',
