@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Rect, Stop, ClipPath, G } from 'react-native-svg';
+import Svg, { ClipPath, Defs, G, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 interface WaterBackgroundProps {
   percent: number; // 0 to 1

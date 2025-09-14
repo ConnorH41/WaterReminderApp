@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Dimensions, PanResponder, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import WaterBackground from '../../components/WaterBackground';
 import WaterButton from '../../components/WaterButton';
-import { subscribe, subscribe as subscribeEvent } from '../../utils/eventBus';
+import { subscribe as subscribeEvent } from '../../utils/eventBus';
 import { addCup, getGoal, getTodayIntake, resetIntake, setTodayIntake } from '../../utils/storage';
 
 const HomeScreen: React.FC = () => {
