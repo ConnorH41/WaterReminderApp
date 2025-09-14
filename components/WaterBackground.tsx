@@ -2,20 +2,18 @@
 import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
-import Svg, { ClipPath, Defs, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Rect, Stop, ClipPath, G } from 'react-native-svg';
 
 interface WaterBackgroundProps {
   percent: number; // 0 to 1
   children?: React.ReactNode;
-  emoji?: string;
 }
 
-// No animated Path needed after removing wave
-
-const WaterBackground: React.FC<WaterBackgroundProps> = ({ percent, children, emoji }) => {
+const WaterBackground: React.FC<WaterBackgroundProps> = ({ percent, children }) => {
   const screenWidth = Dimensions.get('window').width;
   const glassWidth = Math.min(320, screenWidth - 48);
-  const glassHeight = 420;
+  // Reduce height so SVG fits tightly around the glass area
+  const glassHeight = Math.floor(glassWidth * 1.0);
 
   // animated fill progress (0..1)
   const fillProgress = useSharedValue(Math.max(0, Math.min(1, percent)));
@@ -23,9 +21,9 @@ const WaterBackground: React.FC<WaterBackgroundProps> = ({ percent, children, em
     fillProgress.value = withTiming(Math.max(0, Math.min(1, percent)), { duration: 600 });
   }, [percent]);
 
-  // animated rect for clip (y and height)
+  // animated rect for clip (y and height) - this creates the water level
   const AnimatedRect = Animated.createAnimatedComponent(Rect as any);
-  const animatedRectProps = useAnimatedProps(() => {
+  const animatedWaterProps = useAnimatedProps(() => {
     const p = fillProgress.value;
     const h = glassHeight * p;
     const y = glassHeight - h;
@@ -34,79 +32,64 @@ const WaterBackground: React.FC<WaterBackgroundProps> = ({ percent, children, em
       height: h,
     } as any;
   });
-  const ARect: any = AnimatedRect;
+  const AWaterRect: any = AnimatedRect;
 
-  // animated props for an overlay rect that covers the unfilled top area
-  const animatedOverlayProps = useAnimatedProps(() => {
-    const p = fillProgress.value;
-    const h = glassHeight * p;
-    const overlayHeight = glassHeight - h;
-    return {
-      y: 0,
-      height: overlayHeight,
-    } as any;
-  });
-  const AOverlayRect: any = AnimatedRect;
-
-  // (removed animated wave) keep only animated rect for clean fill
+  // WaterBackground now shows a glass with water; emoji support removed
 
   return (
     <View style={styles.container}>
       <View style={styles.centerContainer} pointerEvents="none">
         <Svg width={glassWidth} height={glassHeight}>
           <Defs>
+            {/* glass fill gradient */}
+            <LinearGradient id="glassGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <Stop offset="0%" stopColor="#ffffff" stopOpacity="0.12" />
+              <Stop offset="50%" stopColor="#ffffff" stopOpacity="0.06" />
+              <Stop offset="100%" stopColor="#ffffff" stopOpacity="0.02" />
+            </LinearGradient>
+
+            {/* gradient for water effect - brighter and fully opaque */}
+            <LinearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <Stop offset="0%" stopColor="#00b0ff" stopOpacity="1" />
+              <Stop offset="50%" stopColor="#0091ea" stopOpacity="1" />
+              <Stop offset="100%" stopColor="#0077c2" stopOpacity="1" />
+            </LinearGradient>
+
+            {/* clip to keep content inside rounded glass */}
             <ClipPath id="glassClip">
               <Rect x={0} y={0} width={glassWidth} height={glassHeight} rx={24} />
             </ClipPath>
           </Defs>
 
-          {/* glass background */}
-          <Rect x={0} y={0} width={glassWidth} height={glassHeight} rx={24} fill="#ffffff" opacity={0.8} />
+          {/* glass background (subtle translucent) */}
+          <Rect x={0} y={0} width={glassWidth} height={glassHeight} rx={24} fill="url(#glassGradient)" />
 
-          {/* grey (empty) emoji - slightly transparent so blue fill shows through */}
-          <SvgText
-            x={glassWidth / 2}
-            y={glassHeight / 2 + 10}
-            fontSize={Math.floor(glassWidth * 0.7)}
-            fill="#bdbdbd"
-            opacity={0.32}
-            textAnchor="middle"
-            alignmentBaseline="middle"
-          >
-            {emoji ?? '💧'}
-          </SvgText>
-
-          {/* colored emoji (full). We'll cover the top unfilled area with an animated overlay rect so the blue only shows at the bottom */}
-          <SvgText
-            x={glassWidth / 2}
-            y={glassHeight / 2 + 10}
-            fontSize={Math.floor(glassWidth * 0.7)}
-            fill="#26c6da"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-          >
-            {emoji ?? '💧'}
-          </SvgText>
-
-          {/* animated overlay covering the top (unfilled) portion so blue shows only at the bottom */}
-          <AOverlayRect animatedProps={animatedOverlayProps as any} x={0} width={glassWidth} rx={0} fill="#ffffff" opacity={0.8} />
-
-          {/* subtle outline on top so the emoji maintains a visible edge over the fill */}
-          <SvgText
-            x={glassWidth / 2}
-            y={glassHeight / 2 + 10}
-            fontSize={Math.floor(glassWidth * 0.7)}
-            fill="none"
-            stroke="#8c8c8c"
-            strokeWidth={Math.max(1, Math.floor(glassWidth * 0.01))}
-            textAnchor="middle"
-            alignmentBaseline="middle"
-          >
-            {emoji ?? '💧'}
-          </SvgText>
+          {/* subtle inner highlight at top */}
+          <Rect x={8} y={6} width={glassWidth - 16} height={Math.floor(glassHeight * 0.18)} rx={18} fill="#ffffff" opacity={0.06} />
 
           {/* glass border */}
-          <Rect x={2} y={2} width={glassWidth - 4} height={glassHeight - 4} rx={22} stroke="#bfeff6" strokeWidth={2} fill="none" />
+          <Rect x={1} y={1} width={glassWidth - 2} height={glassHeight - 2} rx={22} stroke="#e6f7fb" strokeWidth={2} fill="none" />
+
+          {/* water overlay clipped to the glass rounded rect */}
+          <G clipPath="url(#glassClip)">
+            <AWaterRect
+              animatedProps={animatedWaterProps as any}
+              x={0}
+              y={0}
+              width={glassWidth}
+              height={glassHeight}
+              fill="url(#waterGradient)"
+            />
+
+            {/* water line indicator */}
+            <AWaterRect
+              animatedProps={animatedWaterProps as any}
+              x={0}
+              width={glassWidth}
+              height={2}
+              fill="#0069c0"
+            />
+          </G>
         </Svg>
       </View>
 
@@ -136,9 +119,9 @@ const styles = StyleSheet.create({
   centerContainer: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 180,
+    marginBottom: 100,
   },
-  // emoji is rendered as SVG text inside the glass now
+  // overlay content (children) sits over the glass
   overlayContent: {
     position: 'absolute',
     top: 0,

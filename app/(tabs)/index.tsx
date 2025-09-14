@@ -3,7 +3,7 @@ import { Alert, Dimensions, PanResponder, StyleSheet, Text, TouchableOpacity, Vi
 import WaterBackground from '../../components/WaterBackground';
 import WaterButton from '../../components/WaterButton';
 import { subscribe, subscribe as subscribeEvent } from '../../utils/eventBus';
-import { addCup, getEmoji, getGoal, getTodayIntake, resetIntake, setTodayIntake } from '../../utils/storage';
+import { addCup, getGoal, getTodayIntake, resetIntake, setTodayIntake } from '../../utils/storage';
 
 const HomeScreen: React.FC = () => {
   const [intake, setIntake] = useState(0);
@@ -15,7 +15,6 @@ const HomeScreen: React.FC = () => {
     const fetchData = async () => {
       setIntake(await getTodayIntake());
       setGoal(await getGoal());
-      setEmoji(await getEmoji());
     };
     fetchData();
     const unsubGoal = subscribeEvent('goalChanged', (p: any) => {
@@ -40,15 +39,7 @@ const HomeScreen: React.FC = () => {
   const [interactive, setInteractive] = useState(false);
   const [tempIntake, setTempIntake] = useState(intake);
   // Remove addAmount state
-  const [emoji] = useState('💧');
-  const [emojiState, setEmoji] = useState('💧');
-
-  useEffect(() => {
-    const unsub = subscribe('emojiChanged', (e) => {
-      if (e) setEmoji(e);
-    });
-    return unsub;
-  }, []);
+  // emoji support removed from Home; selection remains in Settings
 
   const handleAddButton = () => {
     setInteractive(true);
@@ -104,7 +95,7 @@ const HomeScreen: React.FC = () => {
   };
 
   return (
-  <WaterBackground percent={waterLevelPercent} emoji={emojiState}>
+  <WaterBackground percent={waterLevelPercent}>
       <View
         style={styles.overlayContent}
         {...(interactive ? panResponder.panHandlers : {})}

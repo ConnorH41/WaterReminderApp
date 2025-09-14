@@ -2,26 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Modal, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { emit } from '../../utils/eventBus';
 import { requestNotificationPermissions, scheduleWaterReminders } from '../../utils/notifications';
-import { getEmoji, getGoal, getMetric, getTodayIntake, setEmoji, setGoal, setMetric } from '../../utils/storage';
+import { getGoal, getMetric, getTodayIntake, setGoal, setMetric } from '../../utils/storage';
 
 const SettingsScreen: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [goal, setGoalState] = useState(8);
   const [todayIntake, setTodayIntake] = useState(0);
-    const [emojiLocal, setEmojiLocal] = useState('💧');
     const [pickerVisible, setPickerVisible] = useState(false);
-    const [pendingEmoji, setPendingEmoji] = useState(emojiLocal);
     const [goalPickerVisible, setGoalPickerVisible] = useState(false);
     const [metric, setMetricLocal] = useState<'imperial'|'metric'>('imperial');
     const [pendingMetric, setPendingMetric] = useState<'imperial'|'metric'>(metric);
-    const [pendingGoalValue, setPendingGoalValue] = useState(goal.toString());
+  const [pendingGoalValue, setPendingGoalValue] = useState(goal.toString());
 
   useEffect(() => {
     const fetchGoal = async () => {
   const storedGoal = await getGoal();
   setGoalState(storedGoal);
       setTodayIntake(await getTodayIntake());
-      setEmojiLocal(await getEmoji());
       setMetricLocal(await getMetric());
     };
     fetchGoal();
@@ -63,38 +60,9 @@ const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Emoji</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={styles.emojiPreview}>{emojiLocal}</Text>
-          <TouchableOpacity style={styles.changeButton} onPress={() => { setPendingEmoji(emojiLocal); setPickerVisible(true); }}>
-            <Text style={styles.changeButtonText}>Change</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      {/* Emoji picker removed */}
 
-      <Modal visible={pickerVisible} animationType="slide" transparent={true}>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Choose Emoji</Text>
-            <View style={styles.modalGrid}>
-              {['💧','🐙','🐢','🦕','🍉','🥤'].map(e => (
-                <TouchableOpacity key={e} onPress={() => setPendingEmoji(e)} style={[styles.modalEmojiOption, pendingEmoji === e ? styles.modalEmojiSelected : undefined]}>
-                  <Text style={styles.modalEmojiText}>{e}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View style={styles.modalFooter}>
-              <TouchableOpacity style={styles.modalCancel} onPress={() => setPickerVisible(false)}>
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalSave} onPress={async () => { await setEmoji(pendingEmoji); setEmojiLocal(pendingEmoji); setPickerVisible(false); emit('emojiChanged', pendingEmoji); Alert.alert('Saved', 'Emoji updated'); }}>
-                <Text style={styles.modalSaveText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {/* Emoji modal removed */}
 
       <Modal visible={goalPickerVisible} animationType="slide" transparent={true}>
         <View style={styles.modalBackdrop}>
@@ -208,21 +176,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  emojiOption: {
-    padding: 6,
-    borderRadius: 8,
-    marginLeft: 8,
-  },
-  emojiOptionText: {
-    fontSize: 22,
-  },
-  emojiSelected: {
-    transform: [{ scale: 1.2 }],
-  },
-  emojiPreview: {
-    fontSize: 24,
-    marginRight: 12,
-  },
+  // emoji picker removed
   changeButton: {
     backgroundColor: '#1e88e5',
     paddingHorizontal: 12,
@@ -257,16 +211,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginBottom: 12,
   },
-  modalEmojiOption: {
-    padding: 8,
-    borderRadius: 8,
-  },
-  modalEmojiSelected: {
-    backgroundColor: '#e0f7fa',
-  },
-  modalEmojiText: {
-    fontSize: 32,
-  },
+  // modal emoji styles removed
   modalFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
