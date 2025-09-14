@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
-import WaterBackground from '../../components/WaterBackground';
 import { getGoal, getIntakeHistory, getTodayIntake } from '../../utils/storage';
 
 const HistoryScreen: React.FC = () => {
@@ -19,7 +18,7 @@ const HistoryScreen: React.FC = () => {
 
   const percent = goal > 0 ? Math.min(todayIntake / goal, 1) : 0;
   return (
-    <WaterBackground percent={percent}>
+    <View style={styles.container}>
       <Text style={styles.header}>History</Text>
       <FlatList
         data={history}
@@ -32,11 +31,16 @@ const HistoryScreen: React.FC = () => {
         )}
         ListEmptyComponent={<Text style={styles.empty}>No history yet.</Text>}
       />
-    </WaterBackground>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#eaf6fb',
+  },
   // container removed, now handled by WaterBackground
   header: {
     fontSize: 24,

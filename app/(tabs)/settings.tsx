@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Keyboard, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import WaterBackground from '../../components/WaterBackground';
 import { requestNotificationPermissions, scheduleWaterReminders } from '../../utils/notifications';
 import { getGoal, getTodayIntake, setGoal } from '../../utils/storage';
 
@@ -51,7 +50,7 @@ const SettingsScreen: React.FC = () => {
 
   const percent = goal > 0 ? Math.min(todayIntake / goal, 1) : 0;
   return (
-    <WaterBackground percent={percent}>
+    <View style={styles.container}>
       <Text style={styles.header}>Settings</Text>
       <View style={styles.row}>
         <Text style={styles.label}>Water Reminders</Text>
@@ -80,13 +79,17 @@ const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </WaterBackground>
+    </View>
   );
 };
 
 
 const styles = StyleSheet.create({
-  // container removed, now handled by WaterBackground
+  container: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: '#f7feff',
+  },
   header: {
     fontSize: 24,
     fontWeight: 'bold',

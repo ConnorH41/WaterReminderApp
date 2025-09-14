@@ -1,59 +1,65 @@
 
 import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import Animated, { useSharedValue, useAnimatedProps, withRepeat, withTiming } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedProps, withTiming } from 'react-native-reanimated';
+import Svg, { Rect, Defs, ClipPath, G } from 'react-native-svg';
 
 interface WaterBackgroundProps {
   percent: number; // 0 to 1
   children?: React.ReactNode;
 }
 
-
-const AnimatedPath = Animated.createAnimatedComponent(Path);
+// No animated Path needed after removing wave
 
 const WaterBackground: React.FC<WaterBackgroundProps> = ({ percent, children }) => {
-  const windowHeight = Dimensions.get('window').height;
-  const waterHeight = Math.round(windowHeight * percent);
-  const waveWidth = Dimensions.get('window').width;
-  const waveHeight = 24;
+  const screenWidth = Dimensions.get('window').width;
+  const glassWidth = Math.min(320, screenWidth - 48);
+  const glassHeight = 420;
 
-  // Animation value for horizontal wave offset
-  const waveOffset = useSharedValue(0);
-
+  // animated fill progress (0..1)
+  const fillProgress = useSharedValue(Math.max(0, Math.min(1, percent)));
   useEffect(() => {
-    waveOffset.value = withRepeat(withTiming(waveWidth, { duration: 3000 }), -1, true);
-  }, [waveWidth]);
+    fillProgress.value = withTiming(Math.max(0, Math.min(1, percent)), { duration: 600 });
+  }, [percent]);
 
-  // Animated wave path
-  const animatedProps = useAnimatedProps(() => {
-    // Animate the wave horizontally
-    const offset = waveOffset.value % waveWidth;
-    // Generate a sine wave path
-    let path = `M 0 ${waveHeight/2}`;
-    for (let x = 0; x <= waveWidth; x += 8) {
-      const y = waveHeight/2 + Math.sin((x + offset) * 0.04) * (waveHeight/2);
-      path += ` L ${x} ${y}`;
-    }
-    path += ` L ${waveWidth} ${waveHeight} L 0 ${waveHeight} Z`;
-    return { d: path };
+  // animated rect for clip (y and height)
+  const AnimatedRect = Animated.createAnimatedComponent(Rect as any);
+  const animatedRectProps = useAnimatedProps(() => {
+    const p = fillProgress.value;
+    const h = glassHeight * p;
+    const y = glassHeight - h;
+    return {
+      y,
+      height: h,
+    } as any;
   });
+  const ARect: any = AnimatedRect;
+
+  // (removed animated wave) keep only animated rect for clean fill
 
   return (
     <View style={styles.container}>
-      <View style={[styles.waterLevel, { height: waterHeight }]}>
-        <Svg
-          width={waveWidth}
-          height={waveHeight}
-          style={{ position: 'absolute', top: -waveHeight, left: 0 }}
-        >
-          <AnimatedPath
-            animatedProps={animatedProps}
-            fill="#26c6da"
-            opacity={0.9}
-          />
+      <View style={styles.centerContainer} pointerEvents="none">
+        <Svg width={glassWidth} height={glassHeight}>
+          <Defs>
+            <ClipPath id="glassClip">
+              <Rect x={0} y={0} width={glassWidth} height={glassHeight} rx={24} />
+            </ClipPath>
+          </Defs>
+
+          {/* glass background */}
+          <Rect x={0} y={0} width={glassWidth} height={glassHeight} rx={24} fill="#ffffff" opacity={0.6} />
+
+          {/* water group clipped to glass */}
+          <G clipPath="url(#glassClip)">
+            <ARect animatedProps={animatedRectProps as any} x={0} width={glassWidth} rx={0} fill="#26c6da" />
+          </G>
+
+          {/* glass border */}
+          <Rect x={2} y={2} width={glassWidth - 4} height={glassHeight - 4} rx={22} stroke="#bfeff6" strokeWidth={2} fill="none" />
         </Svg>
       </View>
+
       <View style={styles.overlayContent}>{children}</View>
     </View>
   );
@@ -76,6 +82,11 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: '#26c6da',
     zIndex: 1,
+  },
+  centerContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 180,
   },
   overlayContent: {
     position: 'absolute',

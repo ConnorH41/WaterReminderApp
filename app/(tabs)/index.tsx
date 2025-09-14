@@ -94,13 +94,18 @@ const HomeScreen: React.FC = () => {
         style={styles.overlayContent}
         {...(interactive ? panResponder.panHandlers : {})}
       >
-        <Text style={styles.header}>Water Reminder</Text>
-        <Text style={styles.subtitle}>Stay hydrated!</Text>
-        <Text style={styles.levelText}>
-          {interactive
-            ? `${tempIntake} / ${goal} oz`
-            : `${intake} / ${goal} oz`}
-        </Text>
+        <View style={styles.topStats} pointerEvents="none">
+          <Text style={styles.ozText}>
+            {interactive ? `${tempIntake} oz` : `${intake} oz`}
+          </Text>
+          <Text style={styles.percentText}>
+            {goal > 0
+              ? `${Math.min(100, Math.round(((interactive ? tempIntake : intake) / goal) * 100))}%`
+              : '0%'}
+          </Text>
+        </View>
+
+  {/* header and subtitle removed per user request */}
         {!interactive ? (
           <View style={styles.bottomButtons}>
             <WaterButton onPress={handleAddButton} amount={'Edit Water Intake'} />
@@ -141,11 +146,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 12,
-  },
+  // header and subtitle removed
   levelText: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -154,6 +155,23 @@ const styles = StyleSheet.create({
     textShadowColor: '#eaf6fb',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  topStats: {
+    position: 'absolute',
+    top: 120,
+    alignItems: 'center',
+    zIndex: 3,
+  },
+  ozText: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#0277bd',
+    marginBottom: 4,
+  },
+  percentText: {
+    fontSize: 16,
+    color: '#00796b',
+    fontWeight: '600',
   },
   bottomButtons: {
     position: 'absolute',
