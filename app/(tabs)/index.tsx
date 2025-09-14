@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   ozText: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#0277bd',
+    color: '#2196f3',
     marginBottom: 4,
   },
   percentText: {
